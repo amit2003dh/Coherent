@@ -1,0 +1,61 @@
+services:
+  # API Service
+  - type: web
+    name: coherent-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.api.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coherent-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: 8000
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SCRAPER_DELAY_SECONDS
+        value: 3
+      - key: MAX_RETRIES
+        value: 3
+      - key: REQUEST_TIMEOUT
+        value: 30
+      - key: USER_AGENT
+        value: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+      - key: BASE_URL
+        value: https://indeed.com/jobs?q=software+developer
+      - key: MAX_PAGES
+        value: 10
+      - key: DEBUG_MODE
+        value: false
+      - key: ENABLE_AI_ENRICHMENT
+        value: true
+      - key: EXPORT_FORMAT
+        value: json
+
+  # Dashboard Service
+  - type: web
+    name: coherent-dashboard
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run frontend/app.py --server.port $PORT --server.address 0.0.0.0
+    healthCheckPath: /
+    envVars:
+      - key: API_BASE_URL
+        fromService:
+          name: coherent-api
+          type: web
+          property: url
+
+# Database
+databases:
+  - name: coherent-db
+    databaseName: coherent
+    user: coherent_user

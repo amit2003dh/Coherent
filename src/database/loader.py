@@ -23,7 +23,18 @@ class DataLoader:
         Returns:
             Tuple of (inserted_count, updated_count)
         """
-        return self.db_manager.upsert_jobs(jobs)
+        # Remove fields not in database schema
+        cleaned_jobs = []
+        for job in jobs:
+            job_copy = job.copy()
+            # Remove fields that don't exist in database schema
+            fields_to_remove = ['job_level', 'experience_years', 'urgency']
+            for field in fields_to_remove:
+                if field in job_copy:
+                    del job_copy[field]
+            cleaned_jobs.append(job_copy)
+        
+        return self.db_manager.upsert_jobs(cleaned_jobs)
     
     def get_jobs(self, limit: int = 100, offset: int = 0, filters: dict = None) -> List[Dict]:
         """Retrieve jobs from database with filters."""

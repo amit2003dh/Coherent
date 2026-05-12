@@ -7,8 +7,14 @@ It serves as the main entry point for the job market intelligence system.
 import logging
 import os
 from datetime import datetime
+import pandas as pd
 from src.scraper.fetcher import JobFetcher
 from src.scraper.parser import JobParser
+from src.cleaning.transform import DataTransformer
+from src.database.loader import DataLoader
+from src.ai.enrich import JobEnricher
+from src.utils.field_extractor import extract_fields
+from src.utils.field_extractor import FIELD_SETS
 import json
 
 # 📋 Configure detailed logging
@@ -51,7 +57,10 @@ def run_pipeline(enrich_with_ai: bool = False):
     # Step 2: Clean and standardize job data
     logger.info("STEP 2: Cleaning and standardizing job data")
     transformer = DataTransformer()
-    cleaned_jobs = transformer.clean_jobs(all_jobs)
+    # Convert to DataFrame for cleaning
+    df = pd.DataFrame(all_jobs)
+    cleaned_df = transformer.clean_dataframe(df)
+    cleaned_jobs = cleaned_df.to_dict('records')
     
     # Save cleaned data in multiple formats
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -81,15 +90,32 @@ def run_pipeline(enrich_with_ai: bool = False):
     else:
         enriched_jobs = cleaned_jobs
     
-    # Step 4: Load data into database
-    logger.info("STEP 4: Loading data into database")
+    # Step 4: Extract specific fields
+    logger.info("STEP 4: Extracting specific fields")
+    from src.config import settings
+    field_set = settings.extraction_fields
+    logger.info(f"Using field set: {field_set}")
+    
+    # Extract only the specified fields
+    field_extracted_jobs = extract_fields(enriched_jobs, field_set)
+    logger.info(f"Extracted {len(field_extracted_jobs)} jobs with {len(FIELD_SETS[field_set])} fields each")
+    
+    # Step 5: Load data into database
+    logger.info("STEP 5: Loading data into database")
     loader = DataLoader()
-    inserted, updated = loader.load_jobs(enriched_jobs)
+    inserted, updated = loader.load_jobs(field_extracted_jobs)
+    
+    # Step 5: Generate summary
+    stats = loader.get_statistics()
     
     # Return comprehensive summary
     result = {
-    # Step 5: Generate summary
-    stats = loader.get_statistics()
+        'total_jobs': stats.get('total_jobs', 0),
+        'companies': stats.get('company_count', 0),
+        'locations': stats.get('location_count', 0),
+        'avg_salary_min': stats.get('avg_salary_min', 0),
+        'avg_salary_max': stats.get('avg_salary_max', 0)
+    }
     logger.info("=" * 50)
     logger.info("PIPELINE SUMMARY")
     logger.info("=" * 50)

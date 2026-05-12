@@ -3,8 +3,11 @@ from typing import Optional
 
 
 class Settings(BaseSettings):
-    # Database
-    database_url: str = "sqlite:///./data/jobs.db"
+    # Database - Use PostgreSQL for Render deployment
+    database_url: str = "postgresql://coherent_user:K8KhUzx3lzoGKOSSPFknQ1hEhCrZJ7Qo@dpg-d81bc6v7f7vs73dfublg-a/coherent"
+    
+    # Data extraction field sets
+    extraction_fields: str = "core"  # Options: "minimal", "essential", "core"
     
     # Scraper
     scraper_delay_seconds: int = 3

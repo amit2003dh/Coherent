@@ -195,7 +195,17 @@ with tab1:
             with st.expander(f"{job['title']} at {job['company']}"):
                 st.write(f"**Location:** {job.get('location', 'N/A')}")
                 st.write(f"**Salary Range:** ${job.get('salary_min', 0):,.0f} - ${job.get('salary_max', 0):,.0f}")
-                st.write(f"**Skills:** {', '.join(job.get('skills', []))}")
+                # Handle skills - it might be a JSON string or a list
+                skills = job.get('skills', '[]')
+                if isinstance(skills, str):
+                    try:
+                        import json
+                        skills_list = json.loads(skills)
+                    except:
+                        skills_list = []
+                else:
+                    skills_list = skills
+                st.write(f"**Skills:** {', '.join(skills_list) if skills_list else 'None'}")
                 st.write(f"**Posted:** {job.get('posted_date', 'N/A')}")
                 if job.get('url'):
                     st.write(f"**URL:** {job['url']}")

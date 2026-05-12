@@ -8,7 +8,7 @@ import logging
 import argparse
 from src.scheduler import run_pipeline
 
- Configure detailed logging
+# Configure detailed logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'

@@ -9,9 +9,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: coherent-db
-          property: connectionString
+        value: postgresql://coherent_user:K8KhUzx3lzoGKOSSPFknQ1hEhCrZJ7Qo@dpg-d81bc6v7f7vs73dfublg-a/coherent
       - key: PYTHON_VERSION
         value: 3.11
       - key: API_HOST

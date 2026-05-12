@@ -52,8 +52,3 @@ services:
           type: web
           property: url
 
-# Database
-databases:
-  - name: coherent-db
-    databaseName: coherent
-    user: coherent_user

@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 
 # Configuration
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8007")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.set_page_config(
     page_title="Job Market Intelligence",
